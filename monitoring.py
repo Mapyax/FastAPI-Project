@@ -1,8 +1,14 @@
 import subprocess
 import json
+import asyncio
+import time
+import httpx
+
+FASTAPI_URL = "http://localhost:8000/api/v1/metrics"
+SEND_INTERVAL_SECONDS = 10
 
 def get_system_metrics():
-    """returns CPU and RAM usage in %"""
+    """returns system metrics in json format"""
     try:
         power_shell_cmd = (
             'powershell -Command "'
@@ -34,5 +40,35 @@ def get_system_metrics():
     except Exception as e:
         print(f"Error occured: {e}")
 
-# cpu, ram = get_system_metrics()
-# print(cpu, ram)
+async def send_metrics_worker():
+    print("=== Worker started ===")
+
+    async with httpx.AsyncClient(timeout=5.0) as client:
+        while True:
+            start_time = time.monotonic()
+            try:
+                metrics = get_system_metrics()
+                print(f"[{time.strftime('%X')}] Sending metrics...")
+                print(metrics)
+
+                response = await client.post(FASTAPI_URL, json=metrics)
+
+                if response.status_code in (200, 202):
+                    print(f" -> Successful. Response: {response.json()}")
+                else:
+                    print(f" -> Error, code: {response.status_code}, Text: {response.text}")
+
+            except httpx.RequestError as exc:
+                print(f" -> Network error! No connection to FastAPI. Retry in {SEND_INTERVAL_SECONDS} sec.")
+
+            elapsed_time = time.monotonic() - start_time
+            sleep_time = max(0.1, SEND_INTERVAL_SECONDS - elapsed_time)
+
+            await asyncio.sleep(sleep_time)
+
+
+if __name__ == "__main__":
+    try:
+        asyncio.run(send_metrics_worker())
+    except KeyboardInterrupt:
+        print("=== Worker stopped ===")
