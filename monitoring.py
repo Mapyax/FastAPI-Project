@@ -54,12 +54,12 @@ async def send_metrics_worker():
                 response = await client.post(FASTAPI_URL, json=metrics)
 
                 if response.status_code in (200, 202):
-                    print(f" -> Successful. Response: {response.json()}")
+                    print(f"Successful. Response: {response.json()}")
                 else:
-                    print(f" -> Error, code: {response.status_code}, Text: {response.text}")
+                    print(f"Error, code: {response.status_code}, Text: {response.text}")
 
             except httpx.RequestError as exc:
-                print(f" -> Network error! No connection to FastAPI. Retry in {SEND_INTERVAL_SECONDS} sec.")
+                print(f"Network error! No connection to FastAPI. Retry in {SEND_INTERVAL_SECONDS} sec.")
 
             elapsed_time = time.monotonic() - start_time
             sleep_time = max(0.1, SEND_INTERVAL_SECONDS - elapsed_time)
