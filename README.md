@@ -1,8 +1,8 @@
 # FastAPI-Project
 My first try into exploring FastAPI framework
 
-FastAPI local server with RabbitMQ and Redis recieving monitoring metrics data from a client.
-Most recent data can be accessed with FastAPI Redis request.
-Messages queue can be accessed by RabbitMQ request.
-#TODO RabbitMQ -> DB for longterm storage
-#TODO TG bot or similar to recieve alerts or request current/all-time metrics data.
+FastAPI local server with RabbitMQ and Redis recieving monitoring metrics data from a client.  
+Most recent data can be accessed with FastAPI Redis request.  
+Messages queue can be accessed by RabbitMQ request.  
+#TODO RabbitMQ -> DB for longterm storage  
+#TODO TG bot or similar to recieve alerts or request current/all-time metrics data.  
