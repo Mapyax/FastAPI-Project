@@ -3,6 +3,7 @@ import json
 import asyncio
 import time
 import httpx
+from datetime import datetime, timedelta, timezone
 
 FASTAPI_URL = "http://localhost:8000/api/v1/metrics"
 SEND_INTERVAL_SECONDS = 10
@@ -30,8 +31,11 @@ def get_system_metrics():
         )
         
         output = subprocess.check_output(power_shell_cmd, shell=True, text=True, encoding='utf-8')
-        
+
         data = json.loads(output)
+        msk_tz = timezone(timedelta(hours=3))
+        timestamp_msk = datetime.now(msk_tz).isoformat(timespec="seconds")
+        data.update({'TS': timestamp_msk})
         
         return data
         

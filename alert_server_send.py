@@ -16,7 +16,7 @@ async def process_message(message: aio_pika.abc.AbstractIncomingMessage):
     async with message.process():
         try:
             metrics = json.loads(message.body.decode("utf-8"))
-            uptime = metrics.get("Uptime_Hours", 0)
+            ts = metrics.get("TS", 0)
             cpu = metrics.get("CPU", 0)
             ram = metrics.get("RAM", 0)
             battery = metrics.get("Battery_Percent", 0)
@@ -24,7 +24,7 @@ async def process_message(message: aio_pika.abc.AbstractIncomingMessage):
             disk_free = metrics.get("Disk_Free_GB", 0)
             disk_percent = disk_free / disk_total * 100
 
-            print(f"\n{uptime} hours uptime")
+            print(f"\n{ts}")
 
             if cpu > CPU_THRESHOLD_PERCENT:
                 print(f"Warning: High CPU Usage! Current: {cpu}%")

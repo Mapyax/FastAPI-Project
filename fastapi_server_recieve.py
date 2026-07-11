@@ -8,6 +8,7 @@ import redis.asyncio as aioredis
 
 
 class SystemMetrics(BaseModel):
+    TS: str
     Uptime_Hours: float | None
     CPU: int | None
     RAM: float | None
