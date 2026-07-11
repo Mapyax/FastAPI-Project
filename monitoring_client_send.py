@@ -58,7 +58,7 @@ async def send_metrics_worker():
                 else:
                     print(f"Error, code: {response.status_code}, Text: {response.text}")
 
-            except httpx.RequestError as exc:
+            except httpx.RequestError as e:
                 print(f"Network error! No connection to FastAPI. Retry in {SEND_INTERVAL_SECONDS} sec.")
 
             elapsed_time = time.monotonic() - start_time
