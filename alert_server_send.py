@@ -24,7 +24,7 @@ async def process_message(message: aio_pika.abc.AbstractIncomingMessage):
             disk_free = metrics.get("Disk_Free_GB", 0)
             disk_percent = disk_free / disk_total * 100
 
-            print(f"\nAnalyzed metrics.\n")
+            print(f"\n{uptime} hours uptime")
 
             if cpu > CPU_THRESHOLD_PERCENT:
                 print(f"Warning: High CPU Usage! Current: {cpu}%")
