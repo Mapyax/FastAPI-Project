@@ -1,0 +1,9 @@
+FROM python:3.12-alpine
+
+WORKDIR /app
+
+RUN pip install --no-cache-dir fastapi uvicorn[standard] pydantic aio-pika redis
+
+COPY fastapi_server_recieve.py .
+
+CMD ["uvicorn", "fastapi_server_recieve:app", "--host", "0.0.0.0", "--port", "8000"]

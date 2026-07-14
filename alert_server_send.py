@@ -2,7 +2,7 @@ import asyncio
 import json
 import aio_pika
 
-RABBITMQ_URL = "amqp://default:default@127.0.0.1:5672/"
+RABBITMQ_URL = "amqp://default:default@iot_rabbitmq:5672/"
 EXCHANGE_NAME = "metrics_exchange"
 QUEUE_NAME = "metrics_alerts_queue"
 
@@ -46,7 +46,14 @@ async def process_message(message: aio_pika.abc.AbstractIncomingMessage):
 async def main():
     print("=== Starting the alert sender... ===")
     
-    connection = await aio_pika.connect_robust(RABBITMQ_URL)
+    connection = None
+    while True:
+        try:
+            connection = await aio_pika.connect_robust(RABBITMQ_URL)
+            break
+        except Exception:
+            print("Error, couldn't connect to RabbitMQ, retry in 5s...")
+            await asyncio.sleep(5)
     channel = await connection.channel()
 
     exchange = await channel.declare_exchange(

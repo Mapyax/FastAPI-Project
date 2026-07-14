@@ -5,6 +5,7 @@ import aio_pika
 from fastapi import FastAPI, HTTPException, status
 from pydantic import BaseModel
 import redis.asyncio as aioredis
+from asyncio import sleep
 
 
 class SystemMetrics(BaseModel):
@@ -24,26 +25,33 @@ redis_client: aioredis.Redis | None = None
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     global rabbitmq_connection, rabbitmq_channel, redis_client
-    print("=== Connecting to RabbitMQ and Redis ===")
     try:
-        redis_client = aioredis.from_url("redis://127.0.0.1:6379", decode_responses=True)
+        print("=== Connecting to Redis ===")
+        redis_client = aioredis.from_url("redis://iot_redis:6379", decode_responses=True)
         await redis_client.ping()
         print("Redis is connected.")
-
-        rabbitmq_connection = await aio_pika.connect_robust(
-            "amqp://default:default@127.0.0.1:5672/"
-        )
-        rabbitmq_channel = await rabbitmq_connection.channel()
-
-        await rabbitmq_channel.declare_exchange(
-            name="metrics_exchange", 
-            type=aio_pika.ExchangeType.FANOUT, 
-            durable=True
-        )
-        print("=== Connection to RabbitMQ and Redis is successful. ===")
     except Exception as e:
-        print(f"Error, couldn't connect to RabbitMQ or Redis: {e}")
+        print(f"Error, couldn't connect to Redis: {e}")
         raise e
+    
+    print("=== Connecting to RabbitMQ ===")
+    while True:
+        try:
+            rabbitmq_connection = await aio_pika.connect_robust(
+                "amqp://default:default@iot_rabbitmq:5672/"
+            )
+            rabbitmq_channel = await rabbitmq_connection.channel()
+
+            await rabbitmq_channel.declare_exchange(
+                name="metrics_exchange", 
+                type=aio_pika.ExchangeType.FANOUT, 
+                durable=True
+            )
+            print("=== Connection to RabbitMQ is successful. ===")
+            break
+        except Exception as e:
+            print("Error, couldn't connect to RabbitMQ, retry in 5s...")
+            await sleep(5)
 
     yield
 
