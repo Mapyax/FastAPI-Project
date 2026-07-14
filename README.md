@@ -6,4 +6,4 @@ Most recent data can be accessed with FastAPI Redis request.
 Messages queue can be accessed by RabbitMQ request.  
 #TODO RabbitMQ -> DB for longterm storage  
 #TODO TG bot or similar to recieve alerts or request current/all-time metrics data.  
-#TODO Wrap everything into docker containers
+#TODO Wrap everything into docker containers | DONE!
