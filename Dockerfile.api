@@ -4,7 +4,7 @@ ENV PYTHONUNBUFFERED=true
 
 WORKDIR /app
 
-RUN pip install --no-cache-dir fastapi uvicorn[standard] pydantic aio-pika redis
+RUN pip install --no-cache-dir fastapi uvicorn[standard] pydantic aio-pika redis asyncpg
 
 COPY fastapi_server_recieve.py .
 

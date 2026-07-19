@@ -9,6 +9,7 @@ WORKDIR /app
 RUN pip install --no-cache-dir httpx aio-pika asyncpg aiogram
 
 COPY alert_server_send.py .
-COPY db_worker.py . 
+COPY db_worker.py .
+COPY tg_bot.py .
 
 CMD ["python"]

@@ -74,3 +74,14 @@ services:
         condition: service_healthy
       postgres:
         condition: service_healthy
+
+  telegram_bot:
+    build:
+      context: .
+      dockerfile: Dockerfile.workers
+    container_name: iot_telegram_bot
+    command: python tg_bot.py
+    env_file:
+      - .env
+    depends_on:
+      - fastapi_app

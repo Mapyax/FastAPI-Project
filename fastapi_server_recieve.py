@@ -2,10 +2,12 @@ import uvicorn
 import json
 from contextlib import asynccontextmanager
 import aio_pika
-from fastapi import FastAPI, HTTPException, status
+from fastapi import FastAPI, HTTPException, status, Query
 from pydantic import BaseModel
 import redis.asyncio as aioredis
 from asyncio import sleep
+from datetime import datetime, timedelta, timezone
+import asyncpg
 
 
 class SystemMetrics(BaseModel):
@@ -21,6 +23,8 @@ class SystemMetrics(BaseModel):
 rabbitmq_connection: aio_pika.RobustConnection | None = None
 rabbitmq_channel: aio_pika.RobustChannel | None = None
 redis_client: aioredis.Redis | None = None
+
+DB_DSN = "postgres://iot_user:iot_password@iot_postgres:5432/iot_db"
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -99,7 +103,7 @@ async def receive_metrics(metrics: SystemMetrics):
             detail="Server error"
         )
 
-@app.get("/api/v1/device/my_pc/status")
+@app.get("/api/v1/device/metrics/status")
 async def get_current_status():
     if not redis_client:
         raise HTTPException(
@@ -112,6 +116,53 @@ async def get_current_status():
         return {"device": "my_pc", "status": "OFFLINE", "current_metrics": None}
 
     return {"device": "my_pc", "status": "ONLINE", "current_metrics": json.loads(raw_data)}
+
+@app.get("/api/v1/device/metrics/history")
+async def get_metrics_history_range(
+    start: str = Query(..., description="Format: DD.MM.YYYY HH:MM"),
+    end: str = Query(..., description="Format: DD.MM.YYYY HH:MM")
+):
+    date_format = "%d.%m.%Y %H:%M"
+    msk_tz = timezone(timedelta(hours=3))
+
+    try:
+        try:
+            start_dt = datetime.strptime(start, date_format).replace(tzinfo=msk_tz)
+            end_dt = datetime.strptime(end, date_format).replace(tzinfo=msk_tz)
+        except ValueError:
+            raise HTTPException(
+                status_code=400, 
+                detail="Incorrect data format. Use: DD.MM.YYYY HH:MM"
+            )
+
+        if start_dt > end_dt:
+            raise HTTPException(status_code=400, detail="Start date can't be later than end date.")
+
+        conn = await asyncpg.connect(DB_DSN)
+        rows = await conn.fetch(
+            """
+            SELECT timestamp_msk, cpu, ram, uptime_hours, processes, battery_percent, disk_total_gb, disk_free_gb 
+            FROM system_metrics 
+            WHERE timestamp_msk BETWEEN $1 AND $2 
+            ORDER BY id ASC
+            """,
+            start_dt,
+            end_dt
+        )
+        await conn.close()
+
+        history = [dict(row) for row in rows]
+        return {
+            "device": "my_pc",
+            "start_requested": start,
+            "end_requested": end,
+            "records_count": len(history),
+            "history": history
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error reading period from DB: {e}")
 
 
 if __name__ == "__main__":
