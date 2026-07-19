@@ -20,6 +20,21 @@ services:
     ports:
       - "6379:6379"
 
+  postgres:
+    image: postgres:15-alpine
+    container_name: iot_postgres
+    ports:
+      - "5433:5432"
+    environment:
+      - POSTGRES_DB=iot_db
+      - POSTGRES_USER=iot_user
+      - POSTGRES_PASSWORD=iot_password
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U iot_user -d iot_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
   fastapi_app:
     build:
       context: .
@@ -41,4 +56,16 @@ services:
     command: python alert_server_send.py
     depends_on:
       rabbitmq:
+        condition: service_healthy
+
+  db_history_worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.workers
+    container_name: iot_db_worker
+    command: python db_worker.py
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      postgres:
         condition: service_healthy

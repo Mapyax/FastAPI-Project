@@ -1,11 +1,12 @@
 FROM python:3.12-alpine
 
-RUN apk add --no-cache gcc musl-dev linux-headers
+RUN apk add --no-cache gcc musl-dev linux-headers postgresql-dev
 
 WORKDIR /app
 
-RUN pip install --no-cache-dir httpx psutil aio-pika
+RUN pip install --no-cache-dir httpx aio-pika asyncpg
 
 COPY alert_server_send.py .
+COPY db_worker.py . 
 
 CMD ["python"]
