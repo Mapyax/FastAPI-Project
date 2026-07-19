@@ -2,6 +2,7 @@ import asyncio
 import json
 import aio_pika
 from aiogram import Bot
+import os
 
 RABBITMQ_URL = "amqp://default:default@iot_rabbitmq:5672/"
 EXCHANGE_NAME = "metrics_exchange"
@@ -12,8 +13,8 @@ RAM_THRESHOLD_PERCENT = 30
 BATTERY_THRESHOLD_PERCENT = 30
 DISK_THRESHOLD_PERCENT = 15
 
-BOT_TOKEN = "" # TODO CONFIG FILE
-CHAT_ID = # TODO CONFIG FILE
+BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
+CHAT_ID = int(os.getenv("TELEGRAM_CHAT_ID"))
 
 bot = Bot(token=BOT_TOKEN)
 
