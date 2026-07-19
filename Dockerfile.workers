@@ -4,7 +4,7 @@ RUN apk add --no-cache gcc musl-dev linux-headers postgresql-dev
 
 WORKDIR /app
 
-RUN pip install --no-cache-dir httpx aio-pika asyncpg
+RUN pip install --no-cache-dir httpx aio-pika asyncpg aiogram
 
 COPY alert_server_send.py .
 COPY db_worker.py . 

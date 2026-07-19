@@ -29,6 +29,9 @@ services:
       - POSTGRES_DB=iot_db
       - POSTGRES_USER=iot_user
       - POSTGRES_PASSWORD=iot_password
+    # Persistent data storage
+    # volumes:
+    #   - iot_postgres_data: *PATH*
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U iot_user -d iot_db"]
       interval: 5s
