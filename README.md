@@ -9,6 +9,7 @@ Alert Worker: Gets data from queue, checks thresholds and sends alerts.
 DB Worker: Gets data from queue and puts it in PostgreSQL table.  
 TG Bot: Sends alerts and reqests data through FastAPI server.
 
+*Forgot to fix uptime hours formatting :)*
 <img width="625" height="1376" alt="image" src="https://github.com/user-attachments/assets/4d2aa775-1ba9-44a3-9596-4a01dc1fc171" />
 <img width="626" height="1374" alt="image" src="https://github.com/user-attachments/assets/ef20bc99-53ae-4c99-87fd-550e19b0a093" />
 
